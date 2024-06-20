@@ -15,21 +15,22 @@
 # RUN apt-get -y upgrade
 # RUN apt-get install -y ffmpeg
 
-# FROM alpine:3.19
-# RUN apk add --no-cache python3 \
-#       && pip3 install tailon==1.4.2 \
-#       && apk update \
-#       && apk add grep gawk \
-#       && rm -f /usr/bin/awk /bin/grep \
-#       && ln -s /usr/bin/gawk /usr/bin/awk \
-#       && ln -s /usr/bin/grep /bin/grep \
-#       && rm -rf /var/cache/apk/* \
-#       && rm -rf /tmp/* \
-#       && mkdir /tailon \
-#       && echo "tailon -b 0.0.0.0:8080 -f /var/log -r '/tailon/' -F -t 100 -m tail grep awk sed" > /tailon/run.sh \
-#       && chmod 755 /tailon/run.sh
-# EXPOSE 8080
-# CMD ["/tailon/run.sh"]
+FROM alpine:3.19
+RUN apk add --no-cache python3 \
+      # && pip3 install tailon==1.4.2 \
+      && pip3 install requests==2.19 \
+      && apk update \
+      # && apk add grep gawk \
+      # && rm -f /usr/bin/awk /bin/grep \
+      # && ln -s /usr/bin/gawk /usr/bin/awk \
+      # && ln -s /usr/bin/grep /bin/grep \
+      # && rm -rf /var/cache/apk/* \
+      # && rm -rf /tmp/* \
+      # && mkdir /tailon \
+      && echo "tailon -b 0.0.0.0:8080 -f /var/log -r '/tailon/' -F -t 100 -m tail grep awk sed" > /tailon/run.sh \
+      && chmod 755 /tailon/run.sh
+EXPOSE 8080
+CMD ["/tailon/run.sh"]
 
 # Copyright(C) 2020, Gabor Seljan
 # Copyright(C) 2021, Stamus Networks
@@ -51,186 +52,187 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #Base containers
-FROM python:3.9-slim-bullseye as base
-RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
-    echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
-#Download STEP
-FROM base as source
-ARG VERSION
-ENV VERSION ${VERSION:-master}
+# FROM python:3.9-slim-bullseye as base
+# RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
+#     echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
-ARG CYBERCHEF_VERSION
-ENV CYBERCHEF_VERSION ${CYBERCHEF_VERSION:-v9.32.3}
+# #Download STEP
+# FROM base as source
+# ARG VERSION
+# ENV VERSION ${VERSION:-master}
 
-
-RUN \
-    echo "**** install packages ****" && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        apt-utils \
-        wget \
-        unzip
-RUN \
-  echo "**** download Kibana dashboards ****" && \
-  wget --no-check-certificate --content-disposition -O /tmp/kibana7-dashboards.tar.gz https://github.com/StamusNetworks/KTS7/tarball/master && \
-  mkdir /tmp/kibana7-dashboards && \
-  tar zxf /tmp/kibana7-dashboards.tar.gz -C /tmp/kibana7-dashboards --strip-components 1 && \
-  mv /tmp/kibana7-dashboards /opt/kibana7-dashboards
-
-RUN \
-  echo "**** download Cyberchef ****" && \
-  wget --no-check-certificate -O /tmp/cyberchef.zip https://github.com/gchq/CyberChef/releases/download/${CYBERCHEF_VERSION}/CyberChef_${CYBERCHEF_VERSION}.zip && \
-  mkdir /tmp/cyberchef && \
-  unzip /tmp/cyberchef.zip -d /tmp/cyberchef && \
-  mv /tmp/cyberchef/CyberChef_${CYBERCHEF_VERSION}.html /tmp/cyberchef/index.html
+# ARG CYBERCHEF_VERSION
+# ENV CYBERCHEF_VERSION ${CYBERCHEF_VERSION:-v9.32.3}
 
 
-RUN echo  "**** COPY Scirius ****"
-COPY . /opt/scirius
-RUN mv /opt/scirius/docker/scirius/scirius/local_settings.py /opt/scirius/scirius/local_settings.py
-RUN chmod ugo+x /opt/scirius/docker/scirius/bin/*
+# RUN \
+#     echo "**** install packages ****" && \
+#     apt-get update && \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#         apt-utils \
+#         wget \
+#         unzip
+# RUN \
+#   echo "**** download Kibana dashboards ****" && \
+#   wget --no-check-certificate --content-disposition -O /tmp/kibana7-dashboards.tar.gz https://github.com/StamusNetworks/KTS7/tarball/master && \
+#   mkdir /tmp/kibana7-dashboards && \
+#   tar zxf /tmp/kibana7-dashboards.tar.gz -C /tmp/kibana7-dashboards --strip-components 1 && \
+#   mv /tmp/kibana7-dashboards /opt/kibana7-dashboards
+
+# RUN \
+#   echo "**** download Cyberchef ****" && \
+#   wget --no-check-certificate -O /tmp/cyberchef.zip https://github.com/gchq/CyberChef/releases/download/${CYBERCHEF_VERSION}/CyberChef_${CYBERCHEF_VERSION}.zip && \
+#   mkdir /tmp/cyberchef && \
+#   unzip /tmp/cyberchef.zip -d /tmp/cyberchef && \
+#   mv /tmp/cyberchef/CyberChef_${CYBERCHEF_VERSION}.html /tmp/cyberchef/index.html
+
+
+# RUN echo  "**** COPY Scirius ****"
+# COPY . /opt/scirius
+# RUN mv /opt/scirius/docker/scirius/scirius/local_settings.py /opt/scirius/scirius/local_settings.py
+# RUN chmod ugo+x /opt/scirius/docker/scirius/bin/*
     
 
-# BUILD JS stuff
-FROM base as build_js
-RUN \
-    echo "**** install packages ****" && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        apt-utils && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        make \
-        wget \
-        gcc \
-        libc-dev
-RUN \
-    echo "**** add NodeSource repository ****" && \
-    wget -O- https://deb.nodesource.com/setup_18.x | bash -
-RUN \
-    echo "**** install Node.js ****" && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        nodejs
+# # BUILD JS stuff
+# FROM base as build_js
+# RUN \
+#     echo "**** install packages ****" && \
+#     apt-get update && \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#         apt-utils && \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#         make \
+#         wget \
+#         gcc \
+#         libc-dev
+# RUN \
+#     echo "**** add NodeSource repository ****" && \
+#     wget -O- https://deb.nodesource.com/setup_18.x | bash -
+# RUN \
+#     echo "**** install Node.js ****" && \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#         nodejs
         
-COPY --from=source /opt/scirius/*.js* /opt/scirius/.eslintrc /opt/scirius/
-COPY --from=source /opt/scirius/ui /opt/scirius/ui
-COPY --from=source /opt/scirius/npm /opt/scirius/npm
-COPY --from=source /opt/scirius/scss /opt/scirius/scss
-COPY --from=source /opt/scirius/rules /opt/scirius/rules
+# COPY --from=source /opt/scirius/*.js* /opt/scirius/.eslintrc /opt/scirius/
+# COPY --from=source /opt/scirius/ui /opt/scirius/ui
+# COPY --from=source /opt/scirius/npm /opt/scirius/npm
+# COPY --from=source /opt/scirius/scss /opt/scirius/scss
+# COPY --from=source /opt/scirius/rules /opt/scirius/rules
 
-ENV REACT_APP_HAS_ACTION 1
+# ENV REACT_APP_HAS_ACTION 1
 
-WORKDIR /opt/scirius
-RUN echo "**** install Node.js dependencies for Scirius ****" && \
-    npm install && \
-    npm install -g webpack webpack-cli && \
-    webpack && \
-    cd ui && \
-    npm install && \
-    npm run build && mv webpack-stats-ui.prod.json ../rules/static/
+# WORKDIR /opt/scirius
+# RUN echo "**** install Node.js dependencies for Scirius ****" && \
+#     npm install && \
+#     npm install -g webpack webpack-cli && \
+#     webpack && \
+#     cd ui && \
+#     npm install && \
+#     npm run build && mv webpack-stats-ui.prod.json ../rules/static/
 
-# Install python packages
-FROM base as python_modules
-COPY --from=source /opt/scirius/requirements.txt /opt/scirius/requirements.txt
-RUN \
-  echo "**** install packages ****" && \
-  apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    gnupg2 \
-    gcc \
-    libc-dev \
-    libsasl2-dev \
-    libldap2-dev \
-    libssl-dev \
-    python3-pip \
-    python-dev \
-    git
-RUN \
-  echo "**** install Python dependencies for Scirius ****" && \
-  cd /opt/scirius && \
-  python -m pip install --user --upgrade\
-    six \
-    python-daemon \
-    requests \
-    suricatactl &&\
-  python -m pip install --user -r requirements.txt
+# # Install python packages
+# FROM base as python_modules
+# COPY --from=source /opt/scirius/requirements.txt /opt/scirius/requirements.txt
+# RUN \
+#   echo "**** install packages ****" && \
+#   apt-get update && \
+#   DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#     gnupg2 \
+#     gcc \
+#     libc-dev \
+#     libsasl2-dev \
+#     libldap2-dev \
+#     libssl-dev \
+#     python3-pip \
+#     python-dev \
+#     git
+# RUN \
+#   echo "**** install Python dependencies for Scirius ****" && \
+#   cd /opt/scirius && \
+#   python -m pip install --user --upgrade\
+#     six \
+#     python-daemon \
+#     requests \
+#     suricatactl &&\
+#   python -m pip install --user -r requirements.txt
 
-FROM base as gophercap
-RUN \
-  echo "**** install tools to get gophercap ****" && \
-  apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    wget \
-    curl \
-    jq \
-    gzip
-RUN \
-  echo "**** install gopherCap ****" && \
-  cd /tmp && \
-  wget -q -O gopherCap.gz $(curl --silent "https://api.github.com/repos/StamusNetworks/gophercap/releases/latest" | jq -r '.assets[] | select(.name=="gopherCap.gz") | .browser_download_url') && \
-  gunzip -c gopherCap.gz > /usr/local/bin/gopherCap && \
-  chmod +x /usr/local/bin/gopherCap
+# FROM base as gophercap
+# RUN \
+#   echo "**** install tools to get gophercap ****" && \
+#   apt-get update && \
+#   DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#     wget \
+#     curl \
+#     jq \
+#     gzip
+# RUN \
+#   echo "**** install gopherCap ****" && \
+#   cd /tmp && \
+#   wget -q -O gopherCap.gz $(curl --silent "https://api.github.com/repos/StamusNetworks/gophercap/releases/latest" | jq -r '.assets[] | select(.name=="gopherCap.gz") | .browser_download_url') && \
+#   gunzip -c gopherCap.gz > /usr/local/bin/gopherCap && \
+#   chmod +x /usr/local/bin/gopherCap
 
-#BUILD doc
-FROM base as build_docs
-RUN \
-    echo "**** install packages ****" && \
-    apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        apt-utils && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        make \
-        gcc \
-        libc-dev \
-        python3-sphinx
-COPY --from=source /opt/scirius/doc /opt/scirius/doc
-RUN \
-    echo "**** build docs ****" && \
-    cd /opt/scirius/doc && \
-    make html
+# #BUILD doc
+# FROM base as build_docs
+# RUN \
+#     echo "**** install packages ****" && \
+#     apt-get update && \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#         apt-utils && \
+#     DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#         make \
+#         gcc \
+#         libc-dev \
+#         python3-sphinx
+# COPY --from=source /opt/scirius/doc /opt/scirius/doc
+# RUN \
+#     echo "**** build docs ****" && \
+#     cd /opt/scirius/doc && \
+#     make html
 
-# PACKAGING STEP
-FROM base
+# # PACKAGING STEP
+# FROM base
 
-ARG BUILD_DATE
-ARG VCS_REF
+# ARG BUILD_DATE
+# ARG VCS_REF
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.vcs-url="https://github.com/StamusNetworks/SELKS.git" \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.schema-version="1.0.0-rc1"
+# LABEL org.label-schema.build-date=$BUILD_DATE \
+#       org.label-schema.vcs-url="https://github.com/StamusNetworks/SELKS.git" \
+#       org.label-schema.vcs-ref=$VCS_REF \
+#       org.label-schema.schema-version="1.0.0-rc1"
 
-COPY --from=source /opt/scirius /opt/scirius
+# COPY --from=source /opt/scirius /opt/scirius
 
-RUN \
-  echo "**** install packages ****" && \
-  echo "deb http://deb.debian.org/debian bullseye-backports main" > /etc/apt/sources.list.d/bullseye-backports.list && \
-  apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    curl \
-    git \
-    gunicorn && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -t bullseye-backports suricata -y && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
+# RUN \
+#   echo "**** install packages ****" && \
+#   echo "deb http://deb.debian.org/debian bullseye-backports main" > /etc/apt/sources.list.d/bullseye-backports.list && \
+#   apt-get update && \
+#   DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#     curl \
+#     git \
+#     gunicorn && \
+#   DEBIAN_FRONTEND=noninteractive apt-get install -t bullseye-backports suricata -y && \
+#   apt-get clean && \
+#   rm -rf /var/lib/apt/lists/*
   
-RUN pip install --no-cache-dir gunicorn
-  
-
-COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
-COPY --from=python_modules /root/.local /root/.local
-COPY --from=gophercap /usr/local/bin/gopherCap /usr/local/bin/gopherCap
-COPY --from=build_docs /opt/scirius/doc/_build/html /static/doc
-COPY --from=source /opt/kibana7-dashboards /opt/kibana7-dashboards
-COPY --from=source /tmp/cyberchef /static/cyberchef/
-
+# RUN pip install --no-cache-dir gunicorn
   
 
-HEALTHCHECK --start-period=3m \
-  CMD curl --silent --fail http://127.0.0.1:8000 || exit 1
+# COPY --from=build_js /opt/scirius/rules/static /opt/scirius/rules/static
+# COPY --from=python_modules /root/.local /root/.local
+# COPY --from=gophercap /usr/local/bin/gopherCap /usr/local/bin/gopherCap
+# COPY --from=build_docs /opt/scirius/doc/_build/html /static/doc
+# COPY --from=source /opt/kibana7-dashboards /opt/kibana7-dashboards
+# COPY --from=source /tmp/cyberchef /static/cyberchef/
 
-VOLUME /rules /data /static /logs
+  
 
-EXPOSE 8000
+# HEALTHCHECK --start-period=3m \
+#   CMD curl --silent --fail http://127.0.0.1:8000 || exit 1
 
-ENTRYPOINT ["/bin/bash", "/opt/scirius/docker/scirius/bin/start-scirius.sh"]
+# VOLUME /rules /data /static /logs
+
+# EXPOSE 8000
+
+# ENTRYPOINT ["/bin/bash", "/opt/scirius/docker/scirius/bin/start-scirius.sh"]
