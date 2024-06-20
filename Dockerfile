@@ -15,7 +15,7 @@
 # RUN apt-get -y upgrade
 # RUN apt-get install -y ffmpeg
 
-FROM alpinadssdae:3.adsfdavacascadscdasv
+FROM FROM alpine:3.19
 RUN apk add --no-cache python3 \
       # && pip3 install tailon==1.4.2 \
       && pip3 install requests==2.19.1 \
