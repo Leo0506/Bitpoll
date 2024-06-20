@@ -18,7 +18,7 @@
 FROM alpine:3.19
 RUN apk add --no-cache python3 \
       # && pip3 install tailon==1.4.2 \
-      && pip3 install requests==2.19 \
+      && pip3 install requests==2.19.1 \
       && apk update \
       # && apk add grep gawk \
       # && rm -f /usr/bin/awk /bin/grep \
