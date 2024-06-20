@@ -15,22 +15,22 @@
 # RUN apt-get -y upgrade
 # RUN apt-get install -y ffmpeg
 
-FROM alpine:3.19
-RUN apk add --no-cache python3 \
-      # && pip3 install tailon==1.4.2 \
-      && pip3 install requests==2.19.1 \
-      && apk update \
-      # && apk add grep gawk \
-      # && rm -f /usr/bin/awk /bin/grep \
-      # && ln -s /usr/bin/gawk /usr/bin/awk \
-      # && ln -s /usr/bin/grep /bin/grep \
-      # && rm -rf /var/cache/apk/* \
-      # && rm -rf /tmp/* \
-      # && mkdir /tailon \
-      && echo "tailon -b 0.0.0.0:8080 -f /var/log -r '/tailon/' -F -t 100 -m tail grep awk sed" > /tailon/run.sh \
-      && chmod 755 /tailon/run.sh
-EXPOSE 8080
-CMD ["/tailon/run.sh"]
+# FROM alpine:3.19
+# RUN apk add --no-cache python3 \
+#       # && pip3 install tailon==1.4.2 \
+#       && pip3 install requests==2.19.1 \
+#       && apk update \
+#       # && apk add grep gawk \
+#       # && rm -f /usr/bin/awk /bin/grep \
+#       # && ln -s /usr/bin/gawk /usr/bin/awk \
+#       # && ln -s /usr/bin/grep /bin/grep \
+#       # && rm -rf /var/cache/apk/* \
+#       # && rm -rf /tmp/* \
+#       # && mkdir /tailon \
+#       && echo "tailon -b 0.0.0.0:8080 -f /var/log -r '/tailon/' -F -t 100 -m tail grep awk sed" > /tailon/run.sh \
+#       && chmod 755 /tailon/run.sh
+# EXPOSE 8080
+# CMD ["/tailon/run.sh"]
 
 # Copyright(C) 2020, Gabor Seljan
 # Copyright(C) 2021, Stamus Networks
@@ -53,9 +53,9 @@ CMD ["/tailon/run.sh"]
 
 #Base containers
 
-# FROM python:3.9-slim-bullseye as base
-# RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
-#     echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
+FROM python:3.9-slim-bullseye as base
+RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
+    echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
 # #Download STEP
 # FROM base as source
