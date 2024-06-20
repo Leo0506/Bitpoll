@@ -151,6 +151,7 @@ RUN \
   python -m pip install --user --upgrade\
     six \
     python-daemon \
+    requests \
     suricatactl &&\
   python -m pip install --user -r requirements.txt
 
