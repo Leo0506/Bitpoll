@@ -53,7 +53,8 @@
 
 #Base containers
 
-FROM python:3.9-slim-bullseye as base
+# FROM python:3.9-slim-bullseye as base
+FROM python:3.9
 RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
     echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
 
