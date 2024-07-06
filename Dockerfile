@@ -54,9 +54,12 @@
 #Base containers
 
 # FROM python:3.9-slim-bullseye as base
-FROM python:3.9-alpine3.20
-RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
-    echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
+# FROM python:3.9-alpine3.20
+# RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf && \
+#     echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf
+From ubuntu:18.04
+RUN apt-get update && apt-get install -y libc6
+
 
 # #Download STEP
 # FROM base as source
