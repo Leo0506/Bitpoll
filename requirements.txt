@@ -45,7 +45,7 @@ icalendar==5.0.12
     #   caldav
     #   recurring-ical-events
     #   x-wr-timezone
-idna==3.7
+#idna==3.7
     # via requests
 libsass==0.23.0
     # via libsasscompiler
@@ -71,7 +71,7 @@ pytz==2024.1
     #   x-wr-timezone
 recurring-ical-events==2.2.1
     # via caldav
-# requests==2.31.0
+requests==2.19.1
     # via caldav
 six==1.16.0
     # via
