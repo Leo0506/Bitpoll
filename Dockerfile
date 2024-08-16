@@ -1,1 +1,1 @@
-FROM uvicorn-gunicorn:python3.9
+FROM python:3.8-slim
