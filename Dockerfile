@@ -1,1 +1,1 @@
-FROM nvidia/cuda:11.0.3-base-ubuntu20.04 
+FROM python:3.10.8-alpine3.16
