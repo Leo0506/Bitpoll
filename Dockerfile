@@ -1,1 +1,1 @@
-FROM tiangolo/uvicorn-gunicorn:python3.9
+FROM uvicorn-gunicorn:python3.9
