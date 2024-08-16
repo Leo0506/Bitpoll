@@ -1,1 +1,1 @@
-FROM node:18
+FROM nginx:1.19.8
