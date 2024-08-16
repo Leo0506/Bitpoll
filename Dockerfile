@@ -1,1 +1,1 @@
-FROM jupyter/base-notebook:latest
+FROM tiangolo/uvicorn-gunicorn:python3.9
