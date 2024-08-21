@@ -71,7 +71,7 @@ pytz==2024.1
     #   x-wr-timezone
 recurring-ical-events==2.2.1
     # via caldav
-requests==2.19.1
+requests==2.31.0
     # via caldav
 six==1.16.0
     # via
