@@ -1,0 +1,19 @@
+{
+    "name": "vendor/project-name",
+    "description": "A sample project demonstrating a specific PHPMailer dependency version",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "phpmailer/phpmailer": "6.4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "echo 'Project dependencies installed.'"
+        ]
+    }
+}
